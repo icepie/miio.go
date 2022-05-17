@@ -1,15 +1,14 @@
 package miio
 
 import (
-	"encoding/json"
 	"fmt"
 	"runtime"
 	"sync"
 
+	"github.com/goccy/go-json"
+
 	"github.com/icepie/miio.go/proto"
 )
-
-type Params []map[string]interface{}
 
 // Client is device client that extends protocol connection.
 type Client struct {

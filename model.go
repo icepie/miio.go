@@ -1,5 +1,7 @@
 package miio
 
+type Params []map[string]interface{}
+
 type ids struct {
 	Did  string `json:"did"`
 	Siid int    `json:"siid"`
