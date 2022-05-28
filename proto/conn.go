@@ -47,6 +47,9 @@ func Dial(addr string, token []byte) (Conn, error) {
 		return Conn{}, err
 	}
 
+	// set deadline
+	conn.SetDeadline(time.Now().Add(DefaultDeadline))
+
 	return Conn{
 		token:          token,
 		readBufferSize: DefaultReadBufferSize,

@@ -15,6 +15,7 @@ type Client struct {
 	sync.Mutex
 	proto.Conn
 	requestID int
+	Did       string
 }
 
 // New creates new device client.
@@ -28,7 +29,7 @@ func New(addr string) *Client {
 		println(err.Error())
 	}
 
-	client := &Client{sync.Mutex{}, conn, 1}
+	client := &Client{sync.Mutex{}, conn, 1, ""}
 	runtime.SetFinalizer(client, func(c *Client) {
 		err = c.Close()
 		if err != nil {
@@ -42,6 +43,12 @@ func New(addr string) *Client {
 // Set Token for device.
 func (c *Client) SetToken(token string) *Client {
 	c.Conn.SetToken(token)
+	return c
+}
+
+// Set Device ID for device.
+func (c *Client) SetDid(did string) *Client {
+	c.Did = did
 	return c
 }
 
@@ -61,6 +68,8 @@ func (c *Client) Send(method string, params interface{}) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// log.Println(string(payload))
 
 	if _, err := c.Write(payload); err != nil {
 		return nil, err
@@ -136,28 +145,36 @@ func (c *Client) OTA(url string, fileMD5 string) ([]byte, error) {
 }
 
 // GetProperties gets device propetriest.
-func (c *Client) GetProperties(params Params) ([]byte, error) {
+func (c *Client) GetProps(params Params) ([]byte, error) {
 	return c.Send("get_properties", params)
 }
 
 // SetProperties sets device propetriest.
-func (c *Client) SetProperties(params Params) ([]byte, error) {
+func (c *Client) SetProps(params Params) ([]byte, error) {
 	return c.Send("set_properties", params)
 }
 
 // Action execute device action.
 func (c *Client) Action(siid int, aiid int, params []interface{}) ([]byte, error) {
+	var did string
+	if c.Did != "" {
+		did = c.Did
+	} else {
+		did = fmt.Sprintf("%d-%d", siid, aiid)
+	}
+
 	v := struct {
 		DID  string        `json:"did"`
 		SIID int           `json:"siid"`
 		AIID int           `json:"aiid"`
 		In   []interface{} `json:"in"`
-		Out  []interface{} `json:"out"`
+		Out  []interface{} `json:"out,omitempty"`
 	}{
-		DID:  fmt.Sprintf("%d-%d", siid, aiid),
+		DID:  did,
 		SIID: siid,
 		AIID: aiid,
 		In:   params,
+		Out:  []interface{}{},
 	}
 	return c.Send("action", v)
 }
