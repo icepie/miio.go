@@ -1,11 +1,12 @@
 package miio
 
 import (
-	"fmt"
+	"encoding/json"
+	"log"
 	"runtime"
 	"sync"
 
-	"github.com/goccy/go-json"
+	// "github.com/goccy/go-json"
 
 	"github.com/icepie/miio.go/proto"
 )
@@ -52,6 +53,11 @@ func (c *Client) SetDid(did string) *Client {
 	return c
 }
 
+// close connection.
+func (c *Client) Close() error {
+	return c.Conn.Close()
+}
+
 // Send sends request to device.
 func (c *Client) Send(method string, params interface{}) ([]byte, error) {
 	req := struct {
@@ -68,8 +74,6 @@ func (c *Client) Send(method string, params interface{}) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// log.Println(string(payload))
 
 	if _, err := c.Write(payload); err != nil {
 		return nil, err
@@ -110,7 +114,6 @@ func (c *Client) ConfigRouter(ssid string, passwd string, uid string) ([]byte, e
 	return c.Send("miIO.config_router", v)
 }
 
-// Info requests device info.
 func (c *Client) Info() ([]byte, error) {
 	return c.Send("miIO.info", nil)
 }
@@ -145,36 +148,34 @@ func (c *Client) OTA(url string, fileMD5 string) ([]byte, error) {
 }
 
 // GetProperties gets device propetriest.
-func (c *Client) GetProps(params Params) ([]byte, error) {
-	return c.Send("get_properties", params)
+func (c *Client) GetProps(params ...PropParam) ([]byte, error) {
+
+	var fParams []PropParam
+
+	for _, p := range params {
+		fParams = append(fParams, *p.SetDid(c.Did))
+	}
+
+	return c.Send("get_properties", fParams)
 }
 
 // SetProperties sets device propetriest.
-func (c *Client) SetProps(params Params) ([]byte, error) {
-	return c.Send("set_properties", params)
+func (c *Client) SetProps(params ...PropParam) ([]byte, error) {
+
+	var fParams []PropParam
+
+	for _, p := range params {
+		fParams = append(fParams, *p.SetDid(c.Did))
+	}
+
+	return c.Send("set_properties", fParams)
 }
 
 // Action execute device action.
-func (c *Client) Action(siid int, aiid int, params []interface{}) ([]byte, error) {
-	var did string
-	if c.Did != "" {
-		did = c.Did
-	} else {
-		did = fmt.Sprintf("%d-%d", siid, aiid)
-	}
+func (c *Client) DoAction(param ActionParam) ([]byte, error) {
+	param.SetDid(c.Did)
 
-	v := struct {
-		DID  string        `json:"did"`
-		SIID int           `json:"siid"`
-		AIID int           `json:"aiid"`
-		In   []interface{} `json:"in"`
-		Out  []interface{} `json:"out,omitempty"`
-	}{
-		DID:  did,
-		SIID: siid,
-		AIID: aiid,
-		In:   params,
-		Out:  []interface{}{},
-	}
-	return c.Send("action", v)
+	log.Println(param)
+
+	return c.Send("action", param)
 }
