@@ -2,7 +2,6 @@ package miio
 
 import (
 	"encoding/json"
-	"log"
 	"runtime"
 	"sync"
 
@@ -175,7 +174,7 @@ func (c *Client) SetProps(params ...PropParam) ([]byte, error) {
 func (c *Client) DoAction(param ActionParam) ([]byte, error) {
 	param.SetDid(c.Did)
 
-	log.Println(param)
+	// log.Println(param)
 
 	return c.Send("action", param)
 }
