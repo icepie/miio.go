@@ -14,74 +14,74 @@ go get github.com/icepie/miio.go
 > for get device token and device id, you can try [micloud](https://github.com/icepie/micloud)
 
 ```go
-	device := miio.New("192.168.1.12").
-		SetToken("ffffffffffffffffffffffffffffffff").
-		SetDid("did") // some device must use the true device id
+device := miio.New("192.168.1.12").
+	SetToken("ffffffffffffffffffffffffffffffff").
+	SetDid("did") // some device must use the true device id
 
-    // get device info
-	info, err := device.Info()
-	if err != nil {
-		panic(err)
-	}
+// get device info
+info, err := device.Info()
+if err != nil {
+	panic(err)
+}
 
-	fmt.Printf("%s\n", info)
+fmt.Printf("%s\n", info)
 
-	// for get siid and piid, see https://home.miot-spec.com/
-    // get properties
-	getProps, err := device.GetProps(miio.PropParam{
-		Siid: 5,
-		Piid: 1,
-	}, miio.PropParam{
-		Siid: 5,
-		Piid: 2,
-	})
+// for get siid and piid, see https://home.miot-spec.com/
+// get properties
+getProps, err := device.GetProps(miio.PropParam{
+	Siid: 5,
+	Piid: 1,
+}, miio.PropParam{
+	Siid: 5,
+	Piid: 2,
+})
 
-	if err != nil {
-		panic(err)
-	}
+if err != nil {
+	panic(err)
+}
 
-	fmt.Printf("%s\n", getProps)
+fmt.Printf("%s\n", getProps)
 
-    // set properties
-	setPropsParams := []miio.PropParam{
-		{
-			Siid:  5,
-			Piid:  1,
-			Value: true,
-		},
-		{
-			Siid:  5,
-			Piid:  2,
-			Value: 0,
-		},
-	}
+// set properties
+setPropsParams := []miio.PropParam{
+	{
+		Siid:  5,
+		Piid:  1,
+		Value: true,
+	},
+	{
+		Siid:  5,
+		Piid:  2,
+		Value: 0,
+	},
+}
 
-	setProps, err := device.SetProps(setPropsParams...)
-	if err != nil {
-		panic(err)
-	}
+setProps, err := device.SetProps(setPropsParams...)
+if err != nil {
+	panic(err)
+}
 
-    // Do action
-    action, err := device.DoAction(miio.ActionParam{
-		Siid: 2,
-		Aiid: 1,
-		// In:   []any{0, "test"}, if need to send extra data
-	})
+// Do action
+action, err := device.DoAction(miio.ActionParam{
+	Siid: 2,
+	Aiid: 1,
+	// In:   []any{0, "test"}, if need to send extra data
+})
 
-	if err != nil {
-		panic(err)
-	}
+if err != nil {
+	panic(err)
+}
 
-	fmt.Printf("%s\n", action)
+fmt.Printf("%s\n", action)
 
-    // some old devices can not use the standard way to control...
-    // https://github.com/icepie/miio.go/issues/1
-    // you can try to send raw data, like:
-    getProps, err := device.Send("get_prop", []interface{}{"power", "mode", "fan_level", "ver_swing"})
-    setProps, err := device.Send("set_mode", []interface{}{"cool"})
+// some old devices can not use the standard way to control...
+// https://github.com/icepie/miio.go/issues/1
+// you can try to send raw data, like:
+getProps, err := device.Send("get_prop", []interface{}{"power", "mode", "fan_level", "ver_swing"})
+setProps, err := device.Send("set_mode", []interface{}{"cool"})
 
 
-    // or you can try: https://github.com/icepie/micloud
+// or you can try: https://github.com/icepie/micloud
 
 ```
 
